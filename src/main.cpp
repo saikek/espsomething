@@ -1,4 +1,8 @@
 #include <ESP8266WiFi.h>
+#include <stdio.h>
+
+#define WIFI_HOTSPOT_NAME "WZA"
+#define WIFI_HOTSPOT_PASSWORD "1234567890"
 
 String macToString(const unsigned char *mac)
 {
@@ -14,8 +18,12 @@ WiFiEventHandler probeRequestPrintHandler;
 
 void onProbeRequestPrint(const WiFiEventSoftAPModeProbeRequestReceived &evt)
 {
+  
+  String mac = macToString(evt.mac);
+  
+  //TODO - It is preferred to take average RSSI here since it can wiledly differ with each probe request. Collect from few probes or 1 second time ? 
   Serial.print("Probe request from: ");
-  Serial.print(macToString(evt.mac));
+  Serial.print(mac);
   Serial.print(" RSSI: ");
   Serial.println(evt.rssi);
 }
@@ -29,7 +37,7 @@ void onStationConnected(const WiFiEventSoftAPModeStationConnected &evt)
 
 void onStationDisconnected(const WiFiEventSoftAPModeStationDisconnected &evt)
 {
-  Serial.print("Station disconnected: ");
+  Serial.printf("Station disconnected: ");
   Serial.println(macToString(evt.mac));
 }
 
@@ -39,7 +47,7 @@ void setup()
   Serial.println();
 
   Serial.print("Setting soft-AP ... ");
-  boolean result = WiFi.softAP("WZA", "1234567890");
+  boolean result = WiFi.softAP(WIFI_HOTSPOT_NAME, WIFI_HOTSPOT_PASSWORD);
   if (result == true)
   {
     Serial.println("Ready");
@@ -56,9 +64,15 @@ void setup()
   stationDisconnectedHandler = WiFi.onSoftAPModeStationDisconnected(&onStationDisconnected);
 }
 
+void testTone(){
+  tone(13, 2000, 1000);
+}
+
 void loop()
 {
   Serial.printf("Stations connected = %d  %d \n", WiFi.softAPgetStationNum(), 0);
+
+  //testTone();
 
   delay(3000);
 }
