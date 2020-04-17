@@ -1,3 +1,5 @@
+#ifdef false
+
 #include <Arduino.h>
 
 #include <ESP8266WiFi.h>
@@ -42,3 +44,5 @@ void loop2()
     WiFi.scanDelete();
   }
 }
+
+#endif
