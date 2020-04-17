@@ -1,19 +1,35 @@
 #ifdef false
 
-#include <Arduino.h>
 #include <U8g2lib.h>
 #include <SPI.h>
 #include <Wire.h>
 #include <WiFi.h>
 #include <EasyButton.h>
+#include <LinkedList.h>
 
 #define SDA 5
 #define SCL 4
 
 #define BUTTON_PROGRAM 0
+
+#define DISPLAY_W 64
+#define DISPLAY_H 128
+
+#define SINGAL_GRAPH_SIZE 50
+
+#define WIFI_ENDPOINT_NAME "WZA"
+
 EasyButton button(BUTTON_PROGRAM);
 
+
+
+
+
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R1, SCL, SDA);
+
+
+
+LinkedList<int> signalHistoryValues = LinkedList<int>();
 
 struct networks
 {
@@ -22,6 +38,11 @@ struct networks
 };
 
 networks discoveredNetworks[20];
+
+int reMap(int value)
+{
+  return map(value, -99, -30, 0, 50);
+}
 
 void get_and_sort_networks(byte available_networks)
 {
@@ -50,10 +71,25 @@ void get_and_sort_networks(byte available_networks)
     }
     iteration++;
   }
+
+  for (byte i = 0; i < available_networks; i++)
+  {
+    if (WiFi.SSID(i).equals(WIFI_ENDPOINT_NAME))
+    {
+      if (signalHistoryValues.size >= SINGAL_GRAPH_SIZE)
+      {
+        signalHistoryValues.shift();
+      }
+
+      signalHistoryValues.add(reMap(WiFi.RSSI(i)));
+      break;
+    }
+  }
 }
 
 char signalStr[8];
 char networkName[16];
+int chartValues[50];
 
 int maxNumElements = 15;
 int offset = 6;
@@ -79,13 +115,13 @@ void onSinglePress()
   // HEADER
   u8g2.drawStr(0, 6, "SIG");
   u8g2.drawStr(30, 6, "SSID");
-  // u8g2.drawStr(50, 6, intToString(available_networks));
 
-  u8g2.drawLine(0, 8, 63, 8);          //horizontal
-  u8g2.drawLine(4 * 3, 0, 4 * 3, 127); //vertical
+  u8g2.drawLine(0, 8, 63, 8);         //horizontal
+  u8g2.drawLine(4 * 3, 0, 4 * 3, 70); //vertical
 
   // WIFI networks
-  for (int i = 0; i < _max(10, available_networks); i = i + 1)
+  // for (int i = 0; i < _max(10, available_networks); i = i + 1)
+  for (int i = 0; i < 10; i = i + 1)
   {
     memset(signalStr, 0, sizeof(signalStr));
     memset(networkName, 0, sizeof(networkName));
@@ -97,6 +133,16 @@ void onSinglePress()
 
     u8g2.drawStr(0, firstOffset, signalStr);
     u8g2.drawStr(4 * 4 + 1, firstOffset, networkName);
+  }
+
+  // ------------- Draw graph -------------
+
+  u8g2.drawFrame(0, 70, DISPLAY_W - 1, DISPLAY_H - 70);
+
+  for (int i = 0; i < signalHistoryValues.size(); i++)
+  {
+    // drawPoint(i, signalHistoryValues.get(i));
+    u8g2.drawPixel(i, DISPLAY_H - signalHistoryValues.get(i));
   }
 
   u8g2.sendBuffer();
