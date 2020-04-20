@@ -4,7 +4,7 @@
 #include <SPI.h>
 #include <Wire.h>
 #include <WiFi.h>
-#include <EasyButton.h>
+// #include <EasyButton.h>
 #include <LinkedList.h>
 
 #define SDA 5
@@ -15,19 +15,13 @@
 #define DISPLAY_W 64
 #define DISPLAY_H 128
 
-#define SINGAL_GRAPH_SIZE 50
+#define SINGAL_GRAPH_SIZE DISPLAY_W - 5
 
 #define WIFI_ENDPOINT_NAME "WZA"
 
-EasyButton button(BUTTON_PROGRAM);
-
-
-
-
+// EasyButton button(BUTTON_PROGRAM);
 
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R1, SCL, SDA);
-
-
 
 LinkedList<int> signalHistoryValues = LinkedList<int>();
 
@@ -76,7 +70,7 @@ void get_and_sort_networks(byte available_networks)
   {
     if (WiFi.SSID(i).equals(WIFI_ENDPOINT_NAME))
     {
-      if (signalHistoryValues.size >= SINGAL_GRAPH_SIZE)
+      if (signalHistoryValues.size() >= SINGAL_GRAPH_SIZE)
       {
         signalHistoryValues.shift();
       }
@@ -89,6 +83,7 @@ void get_and_sort_networks(byte available_networks)
 
 char signalStr[8];
 char networkName[16];
+char numNetworks[1];
 int chartValues[50];
 
 int maxNumElements = 15;
@@ -116,6 +111,10 @@ void onSinglePress()
   u8g2.drawStr(0, 6, "SIG");
   u8g2.drawStr(30, 6, "SSID");
 
+  //Number of connected devices
+  itoa(available_networks, numNetworks, 10);
+  u8g2.drawStr(50, 6, numNetworks);
+
   u8g2.drawLine(0, 8, 63, 8);         //horizontal
   u8g2.drawLine(4 * 3, 0, 4 * 3, 70); //vertical
 
@@ -136,7 +135,6 @@ void onSinglePress()
   }
 
   // ------------- Draw graph -------------
-
   u8g2.drawFrame(0, 70, DISPLAY_W - 1, DISPLAY_H - 70);
 
   for (int i = 0; i < signalHistoryValues.size(); i++)
@@ -153,12 +151,14 @@ void setup(void)
   u8g2.begin();
   Serial.begin(115200);
 
-  button.onPressed(onSinglePress);
+  //   button.onPressed(onSinglePress);
 }
 
 void loop()
 {
-  button.read();
+  //   button.read();
+  onSinglePress();
+  // delay(200);
 }
 
 #endif
