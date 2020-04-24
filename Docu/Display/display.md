@@ -2,12 +2,6 @@
 
 I found this relatively cheap display for $1.79 for screen and $2.62. (May 2020) with resolution of 160x128, SPI interface 3.3V logic and backlight.
 
-
-
-
-
-
-
 # WIRING
 
 | Display Pin | ESP Pin | Description                |
@@ -20,9 +14,6 @@ I found this relatively cheap display for $1.79 for screen and $2.62. (May 2020)
 | CS          | 5       | Chip Select                |
 | GND         | GND     | Ground pin                 |
 | VCC         | 3.3V    | IC Power, 3.3V             |
-
-
-
 
 # Links
 [Wiki page](http://www.lcdwiki.com/1.8inch_Arduino_SPI_Module_ST7735S_SKU:MAR1801)
